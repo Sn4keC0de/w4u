@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Donde el universo te espera</title>
+
+    <!-- Favicon: estrella -->
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>✧</text></svg>">
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            min-height: 100vh;
+            background: linear-gradient(160deg, #0a0a12 0%, #12121f 40%, #1a1525 100%);
+            color: #e8e0d5;
+            font-family: 'Courier New', Courier, monospace;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 2rem 1rem 4rem;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        /* Contenedor de estrellas de fondo */
+        #stars {
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            z-index: 0;
+            overflow: hidden;
+        }
+
+        #stars span {
+            position: absolute;
+            color: #f5e8c7;
+            opacity: 0.35;
+            font-size: 10px;
+            animation: twinkle 4s ease-in-out infinite;
+            user-select: none;
+        }
+
+        @keyframes twinkle {
+            0%, 100% { opacity: 0.15; transform: scale(1); }
+            50%      { opacity: 0.55; transform: scale(1.15); }
+        }
+
+        /* Todo el contenido por encima de las estrellas */
+        .header,
+        .poem-container {
+            position: relative;
+            z-index: 1;
+        }
+
+        .header {
+            width: 100%;
+            max-width: 720px;
+            text-align: center;
+            margin-bottom: 2.5rem;
+        }
+
+        h1 {
+            font-family: Georgia, 'Times New Roman', serif;
+            font-size: clamp(1.6rem, 5vw, 2.4rem);
+            font-weight: 700;
+            letter-spacing: 0.04em;
+            color: #f5e8c7;
+            margin-bottom: 0.4rem;
+            text-shadow: 0 0 20px rgba(245, 232, 199, 0.25);
+        }
+
+        .countdown-box {
+            margin-top: 1.8rem;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(245, 232, 199, 0.15);
+            border-radius: 12px;
+            padding: 1.2rem 1.5rem;
+            display: flex;
+            justify-content: center;
+            gap: 1.2rem;
+            flex-wrap: wrap;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        }
+
+        .time-unit {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-width: 64px;
+        }
+
+        .time-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #f5e8c7;
+            line-height: 1;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .time-label {
+            font-size: 0.7rem;
+            color: #8a8070;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            margin-top: 0.35rem;
+        }
+
+        .poem-container {
+            width: 100%;
+            max-width: 640px;
+            background: rgba(0, 0, 0, 0.45);
+            border: 1px solid rgba(245, 232, 199, 0.12);
+            border-radius: 16px;
+            padding: 2.5rem 2rem;
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4);
+            position: relative;
+            text-align: center;
+        }
+
+        .poem-container::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            border-radius: 16px;
+            padding: 1px;
+            background: linear-gradient(135deg, rgba(245, 232, 199, 0.2), transparent 50%, rgba(245, 232, 199, 0.08));
+            -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            -webkit-mask-composite: xor;
+            mask-composite: exclude;
+            pointer-events: none;
+        }
+
+        #poem {
+            font-size: clamp(0.95rem, 2.8vw, 1.15rem);
+            line-height: 1.85;
+            white-space: pre-wrap;
+            word-break: break-word;
+            text-align: center;
+            letter-spacing: 0;
+            min-height: 280px;
+        }
+
+        #poem span {
+            display: inline-block;
+            width: 0.62em;
+            text-align: center;
+        }
+
+        .char-revealed {
+            color: #f5e8c7;
+            transition: color 0.4s ease;
+        }
+
+        .char-hidden {
+            color: #5a5548;
+        }
+
+        @media (max-width: 480px) {
+            .countdown-box {
+                gap: 0.8rem;
+                padding: 1rem;
+            }
+            .time-value {
+                font-size: 1.5rem;
+            }
+            .poem-container {
+                padding: 1.8rem 1.2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Fondo de estrellas -->
+    <div id="stars"></div>
+
+    <div class="header">
+        <h1>Donde el universo te espera</h1>
+
+        <div class="countdown-box" id="countdown">
+            <div class="time-unit">
+                <span class="time-value" id="days">--</span>
+                <span class="time-label">Días</span>
+            </div>
+            <div class="time-unit">
+                <span class="time-value" id="hours">--</span>
+                <span class="time-label">Horas</span>
+            </div>
+            <div class="time-unit">
+                <span class="time-value" id="minutes">--</span>
+                <span class="time-label">Min</span>
+            </div>
+            <div class="time-unit">
+                <span class="time-value" id="seconds">--</span>
+                <span class="time-label">Seg</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="poem-container">
+        <div id="poem"></div>
+    </div>
+
+    <script>
+        // ========== ESTRELLAS DE FONDO ==========
+        (function createStars() {
+            const container = document.getElementById('stars');
+            const count = 120; // cantidad de estrellas
+
+            for (let i = 0; i < count; i++) {
+                const star = document.createElement('span');
+                star.textContent = '✧';
+
+                // posición aleatoria
+                star.style.left = Math.random() * 100 + '%';
+                star.style.top  = Math.random() * 100 + '%';
+
+                // tamaño aleatorio
+                const size = 8 + Math.random() * 14;
+                star.style.fontSize = size + 'px';
+
+                // opacidad base distinta
+                star.style.opacity = 0.15 + Math.random() * 0.4;
+
+                // delay distinto para el parpadeo
+                star.style.animationDelay = (Math.random() * 5) + 's';
+                star.style.animationDuration = (3 + Math.random() * 4) + 's';
+
+                container.appendChild(star);
+            }
+        })();
+
+        // ========== CONFIGURACIÓN ==========
+        const START_DATE = new Date('2026-07-27T00:00:00');
+        const END_DATE   = new Date('2026-11-29T00:00:00');
+
+        const POEM_RAW = `Dicen que los agujeros negros
+devoran incluso la luz.
+
+Y, sin embargo,
+ninguno ha sido capaz
+de tragarse el brillo que dejaste en mí.
+
+Desde que te fuiste a buscarte,
+las noches aprendieron a pesar distinto.
+Ya no cuentan estrellas;
+cuentan los días que faltan
+para volver a encontrarte.
+
+Cuatro meses.
+
+Para el universo,
+es menos que un parpadeo.
+
+Para mi corazón,
+es una galaxia entera.
+
+Pienso en ti cuando miro el cielo,
+porque sé que, si existiera un lugar
+donde pudieras esconder tus heridas,
+elegirías una constelación olvidada,
+una nebulosa silenciosa,
+o el borde de un agujero negro,
+donde nadie pudiera pedirte más
+de lo que hoy puedes dar.
+
+Y yo...
+
+Yo no quiero rescatarte de ese viaje.
+
+Solo quiero ser la estrella
+que siga encendida
+para que encuentres el camino de regreso.
+
+También pienso en el mar.
+
+En cómo los tiburones siguen avanzando
+aunque las corrientes sean fuertes.
+
+En cómo las mantarrayas
+parecen volar bajo el agua,
+como si la gravedad hubiera olvidado alcanzarlas.
+
+Quisiera aprender de ellas.
+
+Aprender a esperarte
+con esa calma inmensa
+que solo conocen los océanos.
+
+Cuando cae la noche,
+imagino el perfume de una Dama de la Noche
+abriéndose en silencio.
+
+Hay flores que solo muestran su belleza
+cuando todo parece oscuro.
+
+Quizá tú seas así.
+
+Quizá esta oscuridad
+no sea el final de tu jardín,
+sino el instante exacto
+en que estás aprendiendo a florecer.
+
+Sé cuánto amas las cosas antiguas.
+
+Tal vez porque entiendes
+que lo más valioso del mundo
+no es aquello que nunca se rompió,
+
+sino aquello que sobrevivió al tiempo.
+
+Y entonces comprendo algo.
+
+No quiero una versión nueva de ti.
+
+Quiero a la mujer
+que atravesó tormentas,
+que conoció el vacío del espacio,
+la profundidad del océano,
+el perfume de las noches,
+el peso de los siglos
+y el color del dolor azul...
+
+...y aun así decidió seguir viviendo.
+
+Si al final de estos meses
+vuelves tomada de la mano
+de esa versión de ti que estás buscando,
+
+prometo recibirlas a las dos.
+
+Y si descubres que nunca la perdiste,
+que solo estaba cansada,
+
+entonces abrazaré incluso ese cansancio.
+
+Porque nunca amé una versión perfecta.
+
+Amé tus estrellas,
+tus mareas,
+tus silencios,
+tu forma de mirar el cielo
+como quien recuerda un hogar.
+
+Y si algún día vuelves a mirar el universo,
+quiero que recuerdes esto:
+
+No importa cuán inmenso sea el espacio.
+
+Siempre habrá una estrella
+
+esperando por ti.
+
+Y esa estrella,
+
+desde el primer día,
+
+elegí ser yo.`;
+
+        // Quitamos espacios al inicio de cada línea
+        const POEM = POEM_RAW
+            .split('\n')
+            .map(line => line.trimStart())
+            .join('\n');
+
+        const OBFUSCATION_CHARS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()_+-=[]{}|;:,.<>?/¡¿ñÑáéíóúÁÉÍÓÚ';
+
+        // ========== LÓGICA DEL POEMA ==========
+        const poemEl    = document.getElementById('poem');
+        const daysEl    = document.getElementById('days');
+        const hoursEl   = document.getElementById('hours');
+        const minutesEl = document.getElementById('minutes');
+        const secondsEl = document.getElementById('seconds');
+
+        const poemChars = POEM.split('');
+
+        const totalMs   = END_DATE - START_DATE;
+        const totalDays = Math.ceil(totalMs / (1000 * 60 * 60 * 24));
+
+        const nonSpaceIndices = [];
+        poemChars.forEach((ch, i) => {
+            if (ch !== ' ' && ch !== '\n') nonSpaceIndices.push(i);
+        });
+        const totalRevealable = nonSpaceIndices.length;
+
+        function getDaysElapsed() {
+            const now = new Date();
+            if (now < START_DATE) return 0;
+            const elapsed = now - START_DATE;
+            return Math.min(Math.floor(elapsed / (1000 * 60 * 60 * 24)), totalDays);
+        }
+
+        function getRevealCount() {
+            const days = getDaysElapsed();
+            const progress = Math.min(days / totalDays, 1);
+            return Math.floor(progress * totalRevealable);
+        }
+
+        function getRevealedSet() {
+            const count = getRevealCount();
+            const set = new Set();
+            for (let i = 0; i < count; i++) {
+                set.add(nonSpaceIndices[i]);
+            }
+            return set;
+        }
+
+        let revealedSet = getRevealedSet();
+
+        function buildPoemDOM() {
+            poemEl.innerHTML = '';
+            poemChars.forEach((ch, index) => {
+                if (ch === '\n') {
+                    poemEl.appendChild(document.createElement('br'));
+                    return;
+                }
+                const span = document.createElement('span');
+                span.dataset.index = index;
+                span.textContent = ch;
+                span.className = (revealedSet.has(index) || ch === ' ') ? 'char-revealed' : 'char-hidden';
+                poemEl.appendChild(span);
+            });
+        }
+
+        function updateObfuscation() {
+            const spans = poemEl.querySelectorAll('span.char-hidden');
+            spans.forEach(span => {
+                span.textContent = OBFUSCATION_CHARS[Math.floor(Math.random() * OBFUSCATION_CHARS.length)];
+            });
+        }
+
+        function updateCountdown() {
+            const now = new Date();
+            let remaining = END_DATE - now;
+
+            if (remaining <= 0) {
+                daysEl.textContent = '0';
+                hoursEl.textContent = '00';
+                minutesEl.textContent = '00';
+                secondsEl.textContent = '00';
+                revealedSet = new Set(nonSpaceIndices);
+                poemEl.querySelectorAll('span').forEach(span => {
+                    const idx = parseInt(span.dataset.index, 10);
+                    span.className = 'char-revealed';
+                    span.textContent = poemChars[idx];
+                });
+                return;
+            }
+
+            const days    = Math.floor(remaining / (1000 * 60 * 60 * 24));
+            const hours   = Math.floor((remaining % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const minutes = Math.floor((remaining % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((remaining % (1000 * 60)) / 1000);
+
+            daysEl.textContent    = days;
+            hoursEl.textContent   = String(hours).padStart(2, '0');
+            minutesEl.textContent = String(minutes).padStart(2, '0');
+            secondsEl.textContent = String(seconds).padStart(2, '0');
+        }
+
+        function checkNewReveals() {
+            const newSet = getRevealedSet();
+            if (newSet.size > revealedSet.size) {
+                poemEl.querySelectorAll('span').forEach(span => {
+                    const idx = parseInt(span.dataset.index, 10);
+                    if (newSet.has(idx) && !revealedSet.has(idx)) {
+                        span.className = 'char-revealed';
+                        span.textContent = poemChars[idx];
+                    }
+                });
+                revealedSet = newSet;
+            }
+        }
+
+        // Inicialización
+        buildPoemDOM();
+        updateCountdown();
+        checkNewReveals();
+
+        setInterval(updateObfuscation, 50);
+        setInterval(() => {
+            updateCountdown();
+            checkNewReveals();
+        }, 1000);
+    </script>
+</body>
+</html>
